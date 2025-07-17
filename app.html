@@ -1,571 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>集中学習タイマー</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 500px;
-            width: 90%;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .timer-display {
-            text-align: center;
-            font-size: 4em;
-            font-weight: bold;
-            margin: 30px 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
-        }
-
-        .input-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .time-input {
-            width: 60px;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 1.2em;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        .time-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        button {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .start-btn {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            color: white;
-        }
-
-        .stop-btn {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            color: white;
-        }
-
-        .reset-btn {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            color: #333;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-radius: 15px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .tab {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            background: transparent;
-            color: white;
-            font-size: 1em;
-        }
-
-        .tab.active {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .history-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            border-left: 4px solid #43e97b;
-        }
-
-        .history-date {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .history-time {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .completion-message {
-            text-align: center;
-            font-size: 1.5em;
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(67, 233, 123, 0.2);
-            border-radius: 15px;
-            border: 2px solid #43e97b;
-            display: none;
-        }
-
-        .warning-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .warning-message {
-            background: white;
-            color: red;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            font-size: 1.5em;
-            font-weight: bold;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-        }
-
-        .focus-mode {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 1000;
-            display: none;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .stat-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #43e97b;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            color: rgba(255, 255, 255, 0.8);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>勉強タイマー</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 30px;
+    }
+    h1 {
+      color: #333;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    #timer {
+      font-size: 48px;
+      margin: 20px 0;
+      color: #2f4f4f;
+    }
+    #message {
+      font-size: 20px;
+      color: #32cd32;
+      margin-top: 10px;
+    }
+    #history {
+      margin-top: 30px;
+      text-align: left;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #history h2 {
+      border-bottom: 1px solid #ccc;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      padding: 5px 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📚 集中学習タイマー</h1>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('timer')">タイマー</button>
-            <button class="tab" onclick="switchTab('history')">履歴</button>
-            <button class="tab" onclick="switchTab('stats')">統計</button>
-        </div>
+  <h1>勉強タイマーアプリ</h1>
+  <label for="subject">科目名：</label>
+  <input type="text" id="subject" placeholder="例: 数学"><br>
+  <div id="timer">00:00:00</div>
+  <button onclick="startTimer()">スタート</button>
+  <button onclick="stopTimer()">ストップ</button>
+  <div id="message"></div>
 
-        <div id="timer-tab" class="tab-content active">
-            <div class="timer-display" id="timer-display">25:00</div>
-            
-            <div class="input-section">
-                <input type="number" id="minutes" class="time-input" placeholder="分" min="1" max="180" value="25">
-                <span>:</span>
-                <input type="number" id="seconds" class="time-input" placeholder="秒" min="0" max="59" value="0">
-            </div>
+  <div id="history">
+    <h2>勉強履歴</h2>
+    <ul id="logList"></ul>
+  </div>
 
-            <div class="controls">
-                <button class="start-btn" onclick="startTimer()">開始</button>
-                <button class="stop-btn" onclick="stopTimer()">停止</button>
-                <button class="reset-btn" onclick="resetTimer()">リセット</button>
-            </div>
+  <script>
+    let startTime, timerInterval;
 
-            <div class="completion-message" id="completion-message">
-                <div>🎉 お疲れ様でした！</div>
-                <div>素晴らしい集中力でした✨</div>
-            </div>
-        </div>
+    function formatTime(seconds) {
+      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
 
-        <div id="history-tab" class="tab-content">
-            <h2>学習履歴</h2>
-            <div id="history-list"></div>
-        </div>
+    function startTimer() {
+      const subject = document.getElementById("subject").value.trim();
+      if (!subject) {
+        alert("科目名を入力してください！");
+        return;
+      }
 
-        <div id="stats-tab" class="tab-content">
-            <h2>学習統計</h2>
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="total-sessions">0</div>
-                    <div class="stat-label">総セッション数</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="total-time">0</div>
-                    <div class="stat-label">総学習時間(分)</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="avg-session">0</div>
-                    <div class="stat-label">平均セッション時間(分)</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="today-time">0</div>
-                    <div class="stat-label">今日の学習時間(分)</div>
-                </div>
-            </div>
-        </div>
-    </div>
+      document.getElementById("message").textContent = "";
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById("timer").textContent = formatTime(elapsedSeconds);
+      }, 1000);
+    }
 
-    <div class="focus-mode" id="focus-mode">
-        <div class="container">
-            <h1>🎯 集中モード</h1>
-            <div class="timer-display" id="focus-timer-display">25:00</div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="stop-btn" onclick="stopTimer()">学習終了</button>
-            </div>
-        </div>
-    </div>
+    function stopTimer() {
+      clearInterval(timerInterval);
+      const subject = document.getElementById("subject").value.trim();
+      if (!subject) return;
 
-    <div class="warning-overlay" id="warning-overlay">
-        <div class="warning-message">
-            ⚠️ 集中モード中です！<br>
-            他のアプリを使わずに学習に集中しましょう
-        </div>
-    </div>
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      const timeStr = formatTime(elapsedSeconds);
 
-    <script>
-        let timerInterval;
-        let isRunning = false;
-        let timeLeft = 25 * 60; // 25分
-        let startTime;
-        let studyHistory = [];
-        let focusMode = false;
-        let warningTimeout;
+      // メッセージ表示
+      const messages = ["お疲れ様！", "よく頑張ったね！", "休憩も大事だよ！", "集中できたかな？"];
+      const message = messages[Math.floor(Math.random() * messages.length)];
+      document.getElementById("message").textContent = message;
 
-        // タイマー表示更新
-        function updateDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            document.getElementById('timer-display').textContent = display;
-            document.getElementById('focus-timer-display').textContent = display;
-            
-            // ブラウザタイトルにも表示
-            if (isRunning) {
-                document.title = `${display} - 集中学習タイマー`;
-            } else {
-                document.title = '集中学習タイマー';
-            }
-        }
-
-        // タイマー開始
-        function startTimer() {
-            const minutesInput = document.getElementById('minutes').value;
-            const secondsInput = document.getElementById('seconds').value;
-            
-            if (!isRunning) {
-                timeLeft = (parseInt(minutesInput) || 25) * 60 + (parseInt(secondsInput) || 0);
-                startTime = Date.now();
-            }
-            
-            isRunning = true;
-            focusMode = true;
-            document.getElementById('focus-mode').style.display = 'block';
-            
-            // 集中モード警告システムを開始
-            startFocusMode();
-            
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateDisplay();
-                
-                if (timeLeft <= 0) {
-                    completeTimer();
-                }
-            }, 1000);
-            
-            updateDisplay();
-        }
-
-        // タイマー停止
-        function stopTimer() {
-            clearInterval(timerInterval);
-            isRunning = false;
-            focusMode = false;
-            document.getElementById('focus-mode').style.display = 'none';
-            document.getElementById('warning-overlay').style.display = 'none';
-            
-            // 集中モード警告システムを停止
-            stopFocusMode();
-            
-            updateDisplay();
-        }
-
-        // タイマーリセット
-        function resetTimer() {
-            stopTimer();
-            timeLeft = 25 * 60;
-            updateDisplay();
-            document.getElementById('completion-message').style.display = 'none';
-        }
-
-        // タイマー完了
-        function completeTimer() {
-            stopTimer();
-            
-            // 学習記録を保存
-            const duration = Math.floor((Date.now() - startTime) / 1000 / 60);
-            const record = {
-                date: new Date().toISOString(),
-                duration: duration,
-                completed: true
-            };
-            
-            studyHistory.push(record);
-            // localStorage.setItem('studyHistory', JSON.stringify(studyHistory));
-            
-            // 完了メッセージ表示
-            showCompletionMessage();
-            updateHistoryDisplay();
-            updateStats();
-            
-            // 通知（対応ブラウザのみ）
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('学習完了！', {
-                    body: 'お疲れ様でした！素晴らしい集中力でした✨',
-                    icon: '📚'
-                });
-            }
-        }
-
-        // 完了メッセージ表示
-        function showCompletionMessage() {
-            const messages = [
-                '🎉 お疲れ様でした！\n素晴らしい集中力でした✨',
-                '✨ 完璧です！\n継続は力なり💪',
-                '🌟 素晴らしい！\n今日も頑張りましたね🎯',
-                '💫 お疲れ様！\n成長している自分を誇りに思ってください🌱',
-                '🏆 完了！\n一歩一歩着実に前進していますね🚀'
-            ];
-            
-            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-            document.getElementById('completion-message').innerHTML = randomMessage.replace('\n', '<br>');
-            document.getElementById('completion-message').style.display = 'block';
-            
-            // 3秒後に自動的に隠す
-            setTimeout(() => {
-                document.getElementById('completion-message').style.display = 'none';
-            }, 5000);
-        }
-
-        // 集中モード開始
-        function startFocusMode() {
-            // ページが非アクティブになった時の警告
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            
-            // ウィンドウからフォーカスが外れた時の警告
-            window.addEventListener('blur', handleWindowBlur);
-            
-            // 通知許可をリクエスト
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }
-
-        // 集中モード停止
-        function stopFocusMode() {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('blur', handleWindowBlur);
-            clearTimeout(warningTimeout);
-        }
-
-        // ページの可視性変更処理
-        function handleVisibilityChange() {
-            if (focusMode && document.hidden) {
-                showWarning();
-            } else if (!document.hidden) {
-                hideWarning();
-            }
-        }
-
-        // ウィンドウフォーカス外れ処理
-        function handleWindowBlur() {
-            if (focusMode) {
-                showWarning();
-            }
-        }
-
-        // 警告表示
-        function showWarning() {
-            document.getElementById('warning-overlay').style.display = 'flex';
-            
-            // 通知も表示
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('集中モード中です！', {
-                    body: '他のアプリを使わずに学習に集中しましょう',
-                    icon: '⚠️'
-                });
-            }
-            
-            // 3秒後に自動的に隠す
-            warningTimeout = setTimeout(() => {
-                hideWarning();
-            }, 3000);
-        }
-
-        // 警告非表示
-        function hideWarning() {
-            document.getElementById('warning-overlay').style.display = 'none';
-            clearTimeout(warningTimeout);
-        }
-
-        // タブ切り替え
-        function switchTab(tabName) {
-            // 全てのタブを非アクティブに
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // 選択されたタブをアクティブに
-            event.target.classList.add('active');
-            document.getElementById(tabName + '-tab').classList.add('active');
-            
-            if (tabName === 'history') {
-                updateHistoryDisplay();
-            } else if (tabName === 'stats') {
-                updateStats();
-            }
-        }
-
-        // 履歴表示更新
-        function updateHistoryDisplay() {
-            const historyList = document.getElementById('history-list');
-            historyList.innerHTML = '';
-            
-            if (studyHistory.length === 0) {
-                historyList.innerHTML = '<p>まだ学習記録がありません</p>';
-                return;
-            }
-            
-            // 最新の記録から表示
-            const sortedHistory = studyHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            sortedHistory.forEach(record => {
-                const date = new Date(record.date);
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    <div class="history-date">${date.toLocaleDateString('ja-JP')} ${date.toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'})}</div>
-                    <div class="history-time">学習時間: ${record.duration}分 ${record.completed ? '✅' : '⏹️'}</div>
-                `;
-                historyList.appendChild(historyItem);
-            });
-        }
-
-        // 統計更新
-        function updateStats() {
-            const totalSessions = studyHistory.length;
-            const totalTime = studyHistory.reduce((sum, record) => sum + record.duration, 0);
-            const avgSession = totalSessions > 0 ? Math.round(totalTime / totalSessions) : 0;
-            
-            // 今日の学習時間
-            const today = new Date().toDateString();
-            const todayTime = studyHistory
-                .filter(record => new Date(record.date).toDateString() === today)
-                .reduce((sum, record) => sum + record.duration, 0);
-            
-            document.getElementById('total-sessions').textContent = totalSessions;
-            document.getElementById('total-time').textContent = totalTime;
-            document.getElementById('avg-session').textContent = avgSession;
-            document.getElementById('today-time').textContent = todayTime;
-        }
-
-        // 初期化
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDisplay();
-            updateHistoryDisplay();
-            updateStats();
-        });
-
-        // 警告オーバーレイクリックで非表示
-        document.getElementById('warning-overlay').addEventListener('click', hideWarning);
-    </script>
+      // 履歴追加
+      const logList = document.getElementById("logList");
+      const li = document.createElement("li");
+      const now = new Date().toLocaleString();
+      li.textContent = `${now} - ${subject}を${timeStr} 勉強しました。`;
+      logList.prepend(li);
+    }
+  </script>
 </body>
 </html>
