@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>勉強タイマー</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 30px;
+    }
+    h1 {
+      color: #333;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    #timer {
+      font-size: 48px;
+      margin: 20px 0;
+      color: #2f4f4f;
+    }
+    #message {
+      font-size: 20px;
+      color: #32cd32;
+      margin-top: 10px;
+    }
+    #history {
+      margin-top: 30px;
+      text-align: left;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #history h2 {
+      border-bottom: 1px solid #ccc;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      padding: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>勉強タイマーアプリ</h1>
+  <label for="subject">科目名：</label>
+  <input type="text" id="subject" placeholder="例: 数学"><br>
+  <div id="timer">00:00:00</div>
+  <button onclick="startTimer()">スタート</button>
+  <button onclick="stopTimer()">ストップ</button>
+  <div id="message"></div>
+
+  <div id="history">
+    <h2>勉強履歴</h2>
+    <ul id="logList"></ul>
+  </div>
+
+  <script>
+    let startTime, timerInterval;
+
+    function formatTime(seconds) {
+      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function startTimer() {
+      const subject = document.getElementById("subject").value.trim();
+      if (!subject) {
+        alert("科目名を入力してください！");
+        return;
+      }
+
+      document.getElementById("message").textContent = "";
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById("timer").textContent = formatTime(elapsedSeconds);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      const subject = document.getElementById("subject").value.trim();
+      if (!subject) return;
+
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      const timeStr = formatTime(elapsedSeconds);
+
+      // メッセージ表示
+      const messages = ["お疲れ様！", "よく頑張ったね！", "休憩も大事だよ！", "集中できたかな？"];
+      const message = messages[Math.floor(Math.random() * messages.length)];
+      document.getElementById("message").textContent = message;
+
+      // 履歴追加
+      const logList = document.getElementById("logList");
+      const li = document.createElement("li");
+      const now = new Date().toLocaleString();
+      li.textContent = `${now} - ${subject}を${timeStr} 勉強しました。`;
+      logList.prepend(li);
+    }
+  </script>
+</body>
+</html>
